@@ -2,9 +2,12 @@ using OneDriveIntegrator.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
+var environment = builder.Environment;
 
 builder.Services
-    .AddMicrosoftAuthenticationService(configuration)
+    .AddHttpContextAccessor()
+    .AddMicrosoftGraphClient(configuration)
+    .AddMicrosoftAuthenticationService(configuration, environment)
     .AddControllersWithViews();
 
 var app = builder.Build();

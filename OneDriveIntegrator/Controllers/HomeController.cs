@@ -1,32 +1,29 @@
 ﻿using System.Diagnostics;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OneDriveIntegrator.Models;
+using OneDriveIntegrator.Services.MicrosoftGraph;
 
 namespace OneDriveIntegrator.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly ILogger<HomeController> _logger;
+    public async Task<IActionResult> Index(
+        string id,
+        [FromServices] IMicrosoftGraphClient microsoftGraphClient)
+        => string.IsNullOrEmpty(id)
+            ? View(await microsoftGraphClient.GetRootChildren())
+            : View(await microsoftGraphClient.GetItemChildren(id));
 
-    public HomeController(ILogger<HomeController> logger)
+    public async Task<IActionResult> Details(
+        string id,
+        [FromServices] IMicrosoftGraphClient microsoftGraphClient)
     {
-        _logger = logger;
+        var response = await microsoftGraphClient.GetItemDetails(id);
+        return response.IsFile()
+            ? View("FileDetails", response)
+            : View("FolderDetails", response);
     }
 
-    public IActionResult Index()
-    {
-        return View();
-    }
-    
-    public IActionResult Privacy()
-    {
-        return View();
-    }
-
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-    }
+    public IActionResult Error() => View(new ErrorViewModel
+        { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
 }

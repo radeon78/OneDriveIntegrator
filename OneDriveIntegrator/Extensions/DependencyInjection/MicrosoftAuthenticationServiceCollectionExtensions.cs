@@ -10,14 +10,17 @@ public static class MicrosoftAuthenticationServiceCollectionExtensions
 
     public static IServiceCollection AddMicrosoftAuthenticationService(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
         services
             .Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme,
                 options =>
                 {
-                    options.Authority = GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.Authority));
-                    options.ClientId = GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.ClientId));
+                    options.Authority =
+                        GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.Authority));
+                    options.ClientId =
+                        GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.ClientId));
                     options.ClientSecret =
                         GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.ClientSecret));
                     options.RequireHttpsMetadata = true;
@@ -50,8 +53,15 @@ public static class MicrosoftAuthenticationServiceCollectionExtensions
                 options.Scope.Add("profile");
                 options.Scope.Add("email");
                 options.Scope.Add("offline_access");
-                options.Scope.Add("files.readwrite.appfolder");
+                options.Scope.Add("Files.ReadWrite.AppFolder");
+                options.Scope.Add("Files.Read.All");
             });
+
+        if (environment.IsDevelopment())
+            return services;
+
+        services.AddDataProtection();
+
         return services;
     }
 
@@ -68,7 +78,7 @@ public static class MicrosoftAuthenticationServiceCollectionExtensions
 
         return app;
     }
-    
+
     private static string GetOpenIdConnectConfigurationValue(IConfiguration configuration, string key)
         => configuration.GetSection($"{OpenIdConnectDefaults.AuthenticationScheme}:{key}").Value;
 }

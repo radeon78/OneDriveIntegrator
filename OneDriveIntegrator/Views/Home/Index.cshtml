@@ -1,8 +1,39 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model OneDriveIntegrator.Services.MicrosoftGraph.Models.ItemsResponse
+@{
+    ViewData["Title"] = "Root Items";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<table class="table table-striped table-hover table-sm">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Size</th>
+        <th>File / Folder</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model.Items)
+    {
+        <tr>
+            <td>
+                <a asp-action="Details" asp-route-id="@item.Id">
+                    @item.Name
+                </a>
+            </td>
+            <td>
+                @item.Size
+            </td>
+            <td>
+                @if (item.IsFile())
+                {
+                    <div>Plik (@item.File!.Type)</div>
+                }
+                else
+                {
+                    <div>Folder (@item.Folder!.ChildCount)</div>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
