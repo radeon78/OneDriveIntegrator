@@ -45,8 +45,10 @@ public static class MicrosoftAuthenticationServiceCollectionExtensions
             {
                 options.SignInScheme = DefaultScheme;
                 options.SaveTokens = true;
-                options.UseTokenLifetime = true;
-
+                options.UseTokenLifetime = false;
+                options.RequireHttpsMetadata = true;
+                options.UsePkce = true;
+                
                 options.ResponseType = "code id_token";
 
                 options.Scope.Add("openid");
