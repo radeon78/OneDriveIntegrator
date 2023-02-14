@@ -36,7 +36,7 @@ public static class MicrosoftAuthenticationServiceCollectionExtensions
             })
             .AddCookie(DefaultScheme, options =>
             {
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+                options.Cookie.Name = "OneDriveIntegrator";
                 options.SlidingExpiration = false;
                 options.Cookie.SameSite = SameSiteMode.Lax;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
@@ -45,12 +45,10 @@ public static class MicrosoftAuthenticationServiceCollectionExtensions
             {
                 options.SignInScheme = DefaultScheme;
                 options.SaveTokens = true;
-                options.UseTokenLifetime = false;
-                options.RequireHttpsMetadata = true;
-                options.UsePkce = true;
-                
+
                 options.ResponseType = "code id_token";
 
+                options.Scope.Clear();
                 options.Scope.Add("openid");
                 options.Scope.Add("profile");
                 options.Scope.Add("email");

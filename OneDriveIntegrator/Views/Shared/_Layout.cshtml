@@ -16,6 +16,9 @@
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            <form class="form-inline">
+                <label class="col-sm-2 col-form-label">@User.Claims.First(u => u.Type == "preferred_username").Value</label>
+            </form>
         </div>
     </nav>
 </header>
