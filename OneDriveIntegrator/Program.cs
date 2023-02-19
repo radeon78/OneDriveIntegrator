@@ -6,8 +6,10 @@ var environment = builder.Environment;
 
 builder.Services
     .AddHttpContextAccessor()
-    .AddMicrosoftGraphClient(configuration)
-    .AddMicrosoftAuthenticationService(configuration, environment)
+    .AddHttpClient(configuration)
+    .AddGraphClient()
+    .AddAuthenticationService(configuration, environment)
+    .AddTokensStorage(configuration)
     .AddControllersWithViews();
 
 var app = builder.Build();
@@ -22,7 +24,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-app.UseMicrosoftAuthenticationService();
+app.UseAuthenticationService();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

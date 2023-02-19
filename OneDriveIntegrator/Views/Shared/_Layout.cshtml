@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using OneDriveIntegrator.Common
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -17,7 +19,7 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <form class="form-inline">
-                <label class="col-sm-2 col-form-label">@User.Claims.First(u => u.Type == "preferred_username").Value</label>
+                <label class="col-sm-2 col-form-label">@User.Claims.First(u => u.Type == Constants.UserClaimName).Value</label>
             </form>
         </div>
     </nav>

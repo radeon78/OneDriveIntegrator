@@ -1,9 +1,6 @@
-using Newtonsoft.Json;
-
 namespace OneDriveIntegrator.Services.MicrosoftGraph.Models;
 
 public class File
 {
-    [JsonProperty("mimeType")]
-    public string Type { get; set; } = string.Empty;
+    public string MimeType { get; init; } = default!;
 }

@@ -4,9 +4,9 @@ namespace OneDriveIntegrator.Services.MicrosoftGraph;
 
 public interface IMicrosoftGraphClient
 {
-    Task<ItemsResponse> GetRootChildren();
+    Task<Items> GetRootChildren();
     
-    Task<DetailsResponse> GetItemDetails(string id);
+    Task<Details> GetItemDetails(string id);
 
-    Task<ItemsResponse> GetItemChildren(string id);
+    Task<Items> GetItemChildren(string id);
 }

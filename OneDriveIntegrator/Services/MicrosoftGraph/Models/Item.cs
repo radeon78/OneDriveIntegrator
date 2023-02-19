@@ -1,29 +1,16 @@
-using Newtonsoft.Json;
-
 namespace OneDriveIntegrator.Services.MicrosoftGraph.Models;
 
 public class Item
 {
-    [JsonProperty("createdDateTime")] 
-    public DateTime Created { get; set; }
+    public string Id { get; init; } = default!;
 
-    [JsonProperty("lastModifiedDateTime")] 
-    public DateTime LastModifiedDate { get; set; }
+    public string Name { get; init; } = default!;
 
-    [JsonProperty("id")] 
-    public string Id { get; set; } = string.Empty;
+    public long Size { get; init; }
 
-    [JsonProperty("name")] 
-    public string Name { get; set; } = string.Empty;
+    public Folder? Folder { get; init; }
 
-    [JsonProperty("size")] 
-    public long Size { get; set; }
-
-    [JsonProperty("folder")] 
-    public Folder? Folder { get; set; }
-
-    [JsonProperty("file")] 
-    public File? File { get; set; }
+    public File? File { get; init; }
 
     public bool IsFile() => File != null;
 }

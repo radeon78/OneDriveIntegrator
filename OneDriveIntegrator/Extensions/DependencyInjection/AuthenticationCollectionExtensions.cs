@@ -1,14 +1,18 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Validators;
+using OneDriveIntegrator.Common;
+using OneDriveIntegrator.Services.Token;
+using OneDriveIntegrator.Services.Token.Models;
 
 namespace OneDriveIntegrator.Extensions.DependencyInjection;
 
-public static class MicrosoftAuthenticationServiceCollectionExtensions
+public static class AuthenticationCollectionExtensions
 {
     private const string DefaultScheme = "Cookies";
+    private const string CookieName = "OneDriveIntegrator";
 
-    public static IServiceCollection AddMicrosoftAuthenticationService(
+    public static IServiceCollection AddAuthenticationService(
         this IServiceCollection services,
         IConfiguration configuration,
         IWebHostEnvironment environment)
@@ -17,12 +21,9 @@ public static class MicrosoftAuthenticationServiceCollectionExtensions
             .Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme,
                 options =>
                 {
-                    options.Authority =
-                        GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.Authority));
-                    options.ClientId =
-                        GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.ClientId));
-                    options.ClientSecret =
-                        GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.ClientSecret));
+                    options.Authority = Configuration.GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.Authority));
+                    options.ClientId = Configuration.GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.ClientId));
+                    options.ClientSecret = Configuration.GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.ClientSecret));
                     options.RequireHttpsMetadata = true;
 
                     options.TokenValidationParameters.IssuerValidator = AadIssuerValidator.GetAadIssuerValidator(
@@ -36,25 +37,30 @@ public static class MicrosoftAuthenticationServiceCollectionExtensions
             })
             .AddCookie(DefaultScheme, options =>
             {
-                options.Cookie.Name = "OneDriveIntegrator";
-                options.SlidingExpiration = false;
+                options.Cookie.Name = CookieName;
+                options.SlidingExpiration = true;
                 options.Cookie.SameSite = SameSiteMode.Lax;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             })
             .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
             {
                 options.SignInScheme = DefaultScheme;
-                options.SaveTokens = true;
+                options.SaveTokens = false;
 
                 options.ResponseType = "code id_token";
 
                 options.Scope.Clear();
-                options.Scope.Add("openid");
-                options.Scope.Add("profile");
-                options.Scope.Add("email");
-                options.Scope.Add("offline_access");
-                options.Scope.Add("Files.ReadWrite.AppFolder");
-                options.Scope.Add("Files.Read.All");
+                foreach (var scope in Constants.Scopes)
+                    options.Scope.Add(scope);
+
+                options.Events.OnTokenResponseReceived = async ctx =>
+                {
+                    var tokenService = ctx.HttpContext.RequestServices.GetRequiredService<ITokenService>();
+                    await tokenService.AddOrUpdateToken(new TokenInput(
+                        accessToken: ctx.TokenEndpointResponse.AccessToken,
+                        refreshToken: ctx.TokenEndpointResponse.RefreshToken,
+                        idToken: ctx.TokenEndpointResponse.IdToken));
+                };
             });
 
         if (environment.IsDevelopment())
@@ -65,7 +71,7 @@ public static class MicrosoftAuthenticationServiceCollectionExtensions
         return services;
     }
 
-    public static IApplicationBuilder UseMicrosoftAuthenticationService(this IApplicationBuilder app)
+    public static IApplicationBuilder UseAuthenticationService(this IApplicationBuilder app)
     {
         app.UseAuthentication();
         app.Use(async (context, next) =>
@@ -78,7 +84,4 @@ public static class MicrosoftAuthenticationServiceCollectionExtensions
 
         return app;
     }
-
-    private static string GetOpenIdConnectConfigurationValue(IConfiguration configuration, string key)
-        => configuration.GetSection($"{OpenIdConnectDefaults.AuthenticationScheme}:{key}").Value;
 }

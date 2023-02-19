@@ -1,32 +1,32 @@
 using Newtonsoft.Json;
+using OneDriveIntegrator.Common;
 using OneDriveIntegrator.Services.MicrosoftGraph.Models;
 
 namespace OneDriveIntegrator.Services.MicrosoftGraph;
 
 public class MicrosoftGraphClient : IMicrosoftGraphClient
 {
-    private readonly HttpClient _httpClient;
-    private readonly Uri _baseUrl;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    public MicrosoftGraphClient(HttpClient httpClient, Uri baseUrl)
-        => (_httpClient, _baseUrl) = (httpClient, baseUrl);
+    public MicrosoftGraphClient(IHttpClientFactory httpClientFactory)
+        => _httpClientFactory = httpClientFactory;
 
-    public async Task<ItemsResponse> GetRootChildren()
-        => await Get<ItemsResponse>(
-            new Uri(_baseUrl, "/v1.0/me/drive/root/children"));
+    public async Task<Items> GetRootChildren()
+        => await Get<Items>("/v1.0/me/drive/root/children");
 
-    public async Task<DetailsResponse> GetItemDetails(string id)
-        => await Get<DetailsResponse>(
-            new Uri(_baseUrl, $"/v1.0/me/drive/items/{id}"));
+    public async Task<Details> GetItemDetails(string id)
+        => await Get<Details>($"/v1.0/me/drive/items/{id}");
 
-    public async Task<ItemsResponse> GetItemChildren(string id)
-        => await Get<ItemsResponse>(
-            new Uri(_baseUrl, $"/v1.0/me/drive/items/{id}/children"));
-    
-    private async Task<T> Get<T>(Uri url)
+    public async Task<Items> GetItemChildren(string id)
+        => await Get<Items>($"/v1.0/me/drive/items/{id}/children");
+
+    private async Task<T> Get<T>(string url)
     {
         var httpRequest = new HttpRequestMessage(HttpMethod.Get, url);
-        var httpResponse = await _httpClient.SendAsync(httpRequest);
+        var httpResponse = await _httpClientFactory
+            .CreateClient(Constants.GraphClientName)
+            .SendAsync(httpRequest);
+
         var body = await httpResponse.Content.ReadAsStringAsync();
 
         if (httpResponse.IsSuccessStatusCode)
