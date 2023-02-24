@@ -1,4 +1,4 @@
-namespace OneDriveIntegrator.Services.MicrosoftGraph.Models;
+namespace OneDriveIntegrator.Services.Graph.Models;
 
 public class Item
 {

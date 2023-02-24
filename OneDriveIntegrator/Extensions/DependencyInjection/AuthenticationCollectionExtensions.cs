@@ -21,9 +21,13 @@ public static class AuthenticationCollectionExtensions
             .Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme,
                 options =>
                 {
-                    options.Authority = Configuration.GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.Authority));
-                    options.ClientId = Configuration.GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.ClientId));
-                    options.ClientSecret = Configuration.GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.ClientSecret));
+                    options.Authority =
+                        GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.Authority));
+                    options.ClientId =
+                        GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.ClientId));
+                    options.ClientSecret =
+                        GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.ClientSecret));
+
                     options.RequireHttpsMetadata = true;
 
                     options.TokenValidationParameters.IssuerValidator = AadIssuerValidator.GetAadIssuerValidator(
@@ -50,7 +54,7 @@ public static class AuthenticationCollectionExtensions
                 options.ResponseType = "code id_token";
 
                 options.Scope.Clear();
-                foreach (var scope in Constants.Scopes)
+                foreach (var scope in Constants.AuthenticationScopes)
                     options.Scope.Add(scope);
 
                 options.Events.OnTokenResponseReceived = async ctx =>
@@ -76,7 +80,8 @@ public static class AuthenticationCollectionExtensions
         app.UseAuthentication();
         app.Use(async (context, next) =>
         {
-            if (context.User.Identity is not { IsAuthenticated: true })
+            if (context.User.Identity is not { IsAuthenticated: true } &&
+                !context.Request.Path.StartsWithSegments("/api/webhook-receiver"))
                 await context.ChallengeAsync();
             else
                 await next();
@@ -84,4 +89,7 @@ public static class AuthenticationCollectionExtensions
 
         return app;
     }
+
+    public static string GetOpenIdConnectConfigurationValue(IConfiguration configuration, string key)
+        => configuration.GetSection($"{OpenIdConnectDefaults.AuthenticationScheme}:{key}").Value;
 }

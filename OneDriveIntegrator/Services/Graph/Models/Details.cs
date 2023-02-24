@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace OneDriveIntegrator.Services.MicrosoftGraph.Models;
+namespace OneDriveIntegrator.Services.Graph.Models;
 
 public class Details : Item
 {

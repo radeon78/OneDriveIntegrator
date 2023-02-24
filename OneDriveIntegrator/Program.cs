@@ -10,6 +10,7 @@ builder.Services
     .AddGraphClient()
     .AddAuthenticationService(configuration, environment)
     .AddTokensStorage(configuration)
+    .AddSubscription(configuration)
     .AddControllersWithViews();
 
 var app = builder.Build();
@@ -28,5 +29,4 @@ app.UseAuthenticationService();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
 app.Run();

@@ -4,10 +4,12 @@ public static class Constants
 {
     public const string UserClaimName = "preferred_username";
 
-    public const string GraphClientName = nameof(GraphClientName);
+    public const string HttpGraphClientName = nameof(HttpGraphClientName);
 
-    public const string AuthClientName = nameof(AuthClientName);
+    public const string HttpAuthenticationClientName = nameof(HttpAuthenticationClientName);
 
-    public static readonly string[] Scopes =
-        { "openid", "profile", "email", "offline_access", "Files.ReadWrite.AppFolder", "Files.Read.All" };
+    public static readonly string[] AuthenticationScopes =
+        { "openid", "profile", "email", "offline_access", "Files.Read.All" };
+
+    public const string NullResponseMessage = "Response is null or empty";
 }

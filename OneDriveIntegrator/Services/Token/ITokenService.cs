@@ -6,5 +6,5 @@ public interface ITokenService
 {
     Task AddOrUpdateToken(TokenInput tokenInput);
 
-    Task<TokenEntity> GetTokenAndRefreshIfNeed(string user);
+    Task<TokenEntity> GetTokenAndRefreshIfNeed();
 }

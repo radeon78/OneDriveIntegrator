@@ -12,14 +12,14 @@ public static class HttpClientCollectionExtensions
     {
         services
             .AddScoped<MicrosoftGraphMessageHandler>()
-            .AddHttpClient(Constants.GraphClientName,
+            .AddHttpClient(Constants.HttpGraphClientName,
                 client => { client.BaseAddress = new Uri(configuration.GetSection(OneDriveApiUrlKey).Value); })
             .AddHttpMessageHandler<MicrosoftGraphMessageHandler>();
 
-        services.AddHttpClient(Constants.AuthClientName,
+        services.AddHttpClient(Constants.HttpAuthenticationClientName,
             client =>
             {
-                client.BaseAddress = new Uri(Configuration
+                client.BaseAddress = new Uri(AuthenticationCollectionExtensions
                     .GetOpenIdConnectConfigurationValue(configuration, nameof(OpenIdConnectOptions.Authority))
                     .Replace("/common/v2.0", string.Empty));
             });

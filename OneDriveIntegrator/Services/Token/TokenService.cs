@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Azure;
 using Azure.Data.Tables;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OneDriveIntegrator.Common;
 using OneDriveIntegrator.Services.Token.Models;
@@ -12,8 +13,9 @@ namespace OneDriveIntegrator.Services.Token;
 public class TokenService : ITokenService
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IConfiguration _configuration;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly TableClient _tokenTableClient;
+    private readonly OpenIdConnectOptions _openIdConnectOptions;
 
     private static readonly JwtSecurityTokenHandler Handler = new();
 
@@ -24,11 +26,13 @@ public class TokenService : ITokenService
     public TokenService(
         TableServiceClient tableServiceClient,
         IHttpClientFactory httpClientFactory,
-        IConfiguration configuration)
+        IHttpContextAccessor httpContextAccessor,
+        IOptionsSnapshot<OpenIdConnectOptions> openIdConnectOptions)
     {
         _tokenTableClient = tableServiceClient.GetTableClient(tableName: TokenTableName);
         _httpClientFactory = httpClientFactory;
-        _configuration = configuration;
+        _httpContextAccessor = httpContextAccessor;
+        _openIdConnectOptions = openIdConnectOptions.Get(OpenIdConnectDefaults.AuthenticationScheme);
     }
 
     public async Task AddOrUpdateToken(TokenInput token)
@@ -55,8 +59,9 @@ public class TokenService : ITokenService
         }
     }
 
-    public async Task<TokenEntity> GetTokenAndRefreshIfNeed(string user)
+    public async Task<TokenEntity> GetTokenAndRefreshIfNeed()
     {
+        var user = _httpContextAccessor.GetSignedInUser();
         var tokenEntity = await GetTokenFromStorage(user);
         if (!tokenEntity.HasValue)
             throw new ArgumentNullException(nameof(tokenEntity));
@@ -76,6 +81,33 @@ public class TokenService : ITokenService
         return tokenEntity.Value;
     }
 
+    private async Task<TokenResponse> RefreshToken(TokenEntity tokenEntity)
+    {
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/common/oauth2/v2.0/token")
+        {
+            Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
+            {
+                new("client_id", _openIdConnectOptions.ClientId!),
+                new("scope", string.Join(",", Constants.AuthenticationScopes.ToArray())),
+                new("refresh_token", tokenEntity.RefreshToken),
+                new("grant_type", GrantType),
+                new("client_secret", _openIdConnectOptions.ClientSecret!)
+            })
+        };
+
+        var httpResponse = await _httpClientFactory
+            .CreateClient(Constants.HttpAuthenticationClientName)
+            .SendAsync(httpRequest);
+
+        var body = await httpResponse.Content.ReadAsStringAsync();
+
+        if (!httpResponse.IsSuccessStatusCode)
+            throw new InvalidOperationException(body);
+
+        return JsonConvert.DeserializeObject<TokenResponse>(body)
+               ?? throw new InvalidOperationException(Constants.NullResponseMessage);
+    }
+
     private Task<NullableResponse<TokenEntity>> GetTokenFromStorage(string user)
         => _tokenTableClient.GetEntityIfExistsAsync<TokenEntity>(partitionKey: user, rowKey: user);
 
@@ -84,41 +116,6 @@ public class TokenService : ITokenService
 
     private Task AddTokenToStorage(TokenEntity tokenEntity)
         => _tokenTableClient.AddEntityAsync(tokenEntity);
-
-    private async Task<TokenResponse> RefreshToken(TokenEntity tokenEntity)
-    {
-        var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/common/oauth2/v2.0/token")
-        {
-            Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
-            {
-                new("client_id",
-                    Configuration.GetOpenIdConnectConfigurationValue(
-                        _configuration,
-                        nameof(OpenIdConnectOptions.ClientId))),
-                new("scope", string.Join(",", Constants.Scopes.ToArray())),
-                new("refresh_token", tokenEntity.RefreshToken),
-                new("grant_type", GrantType),
-                new("client_secret",
-                    Configuration.GetOpenIdConnectConfigurationValue(
-                        _configuration,
-                        nameof(OpenIdConnectOptions.ClientSecret)))
-            })
-        };
-
-        var httpResponse = await _httpClientFactory
-            .CreateClient(Constants.AuthClientName)
-            .SendAsync(httpRequest);
-
-        var body = await httpResponse.Content.ReadAsStringAsync();
-
-        if (httpResponse.IsSuccessStatusCode)
-        {
-            return JsonConvert.DeserializeObject<TokenResponse>(body) ??
-                   throw new InvalidOperationException("Response is null or empty");
-        }
-
-        throw new InvalidOperationException(body);
-    }
 
     private static bool TokenValid(TokenEntity token)
         => token.ExpireIn > DateTimeOffset.UtcNow.AddMinutes(2).ToUnixTimeSeconds();

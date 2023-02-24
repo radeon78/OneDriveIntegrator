@@ -1,16 +1,14 @@
 using Microsoft.Net.Http.Headers;
-using OneDriveIntegrator.Common;
 using OneDriveIntegrator.Services.Token;
 
 namespace OneDriveIntegrator.Services;
 
 public class MicrosoftGraphMessageHandler : DelegatingHandler
 {
-    private readonly IHttpContextAccessor _contextAccessor;
     private readonly ITokenService _tokenService;
 
-    public MicrosoftGraphMessageHandler(IHttpContextAccessor contextAccessor, ITokenService tokenService)
-        => (_contextAccessor, _tokenService) = (contextAccessor, tokenService);
+    public MicrosoftGraphMessageHandler(ITokenService tokenService)
+        => _tokenService = tokenService;
 
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
@@ -23,11 +21,7 @@ public class MicrosoftGraphMessageHandler : DelegatingHandler
 
     private async Task<string> GetAccessToken()
     {
-        var user = GetSignedInUser();
-        var token = await _tokenService.GetTokenAndRefreshIfNeed(user);
+        var token = await _tokenService.GetTokenAndRefreshIfNeed();
         return token.AccessToken;
     }
-
-    private string GetSignedInUser()
-        => _contextAccessor.HttpContext?.User.Claims.First(c => c.Type == Constants.UserClaimName).Value!;
 }

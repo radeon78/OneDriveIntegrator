@@ -1,14 +1,14 @@
 using Newtonsoft.Json;
 using OneDriveIntegrator.Common;
-using OneDriveIntegrator.Services.MicrosoftGraph.Models;
+using OneDriveIntegrator.Services.Graph.Models;
 
-namespace OneDriveIntegrator.Services.MicrosoftGraph;
+namespace OneDriveIntegrator.Services.Graph;
 
-public class MicrosoftGraphClient : IMicrosoftGraphClient
+public class GraphClient : IGraphClient
 {
     private readonly IHttpClientFactory _httpClientFactory;
 
-    public MicrosoftGraphClient(IHttpClientFactory httpClientFactory)
+    public GraphClient(IHttpClientFactory httpClientFactory)
         => _httpClientFactory = httpClientFactory;
 
     public async Task<Items> GetRootChildren()
@@ -22,17 +22,16 @@ public class MicrosoftGraphClient : IMicrosoftGraphClient
 
     private async Task<T> Get<T>(string url)
     {
-        var httpRequest = new HttpRequestMessage(HttpMethod.Get, url);
         var httpResponse = await _httpClientFactory
-            .CreateClient(Constants.GraphClientName)
-            .SendAsync(httpRequest);
+            .CreateClient(Constants.HttpGraphClientName)
+            .GetAsync(url);
 
         var body = await httpResponse.Content.ReadAsStringAsync();
 
-        if (httpResponse.IsSuccessStatusCode)
-            return JsonConvert.DeserializeObject<T>(body) ??
-                   throw new InvalidOperationException("Response is null or empty");
+        if (!httpResponse.IsSuccessStatusCode)
+            throw new InvalidOperationException(body);
 
-        throw new InvalidOperationException(body);
+        return JsonConvert.DeserializeObject<T>(body)
+               ?? throw new InvalidOperationException(Constants.NullResponseMessage);
     }
 }

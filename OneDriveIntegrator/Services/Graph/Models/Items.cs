@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace OneDriveIntegrator.Services.MicrosoftGraph.Models;
+namespace OneDriveIntegrator.Services.Graph.Models;
 
 public class Items
 {
@@ -9,6 +9,6 @@ public class Items
 
     [JsonProperty("@odata.count")] 
     public int Count { get; init; }
-    
+
     public List<Item> Value { get; init; } = default!;
 }
