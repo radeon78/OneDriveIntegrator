@@ -14,11 +14,11 @@ public class GraphClient : IGraphClient
     public async Task<Items> GetRootChildren()
         => await Get<Items>("/v1.0/me/drive/root/children");
 
-    public async Task<Details> GetItemDetails(string id)
-        => await Get<Details>($"/v1.0/me/drive/items/{id}");
-
     public async Task<Items> GetItemChildren(string id)
         => await Get<Items>($"/v1.0/me/drive/items/{id}/children");
+
+    public async Task<Details> GetItemDetails(string id)
+        => await Get<Details>($"/v1.0/me/drive/items/{id}");
 
     private async Task<T> Get<T>(string url)
     {

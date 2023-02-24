@@ -6,7 +6,7 @@ public interface IGraphClient
 {
     Task<Items> GetRootChildren();
     
-    Task<Details> GetItemDetails(string id);
-
     Task<Items> GetItemChildren(string id);
+    
+    Task<Details> GetItemDetails(string id);
 }
