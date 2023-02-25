@@ -61,11 +61,11 @@ public class NotificationService : INotificationService
 
             if (!ChangedSomethingInSubscribedFolder(subscription, details)) continue;
 
-            await _subscriptionService.Update(subscription.UpdateFolder(details.Folder!.ChildCount));
             await _emailService.Send(new EmailInput(
                 emailTo: subscription.RowKey,
                 textContent: CreateContent(subscription, details),
                 folderName: details.Name));
+            await _subscriptionService.Update(subscription.UpdateFolder(details.Folder!.ChildCount));
         }
     }
 
