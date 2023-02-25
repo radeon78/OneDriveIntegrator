@@ -46,8 +46,8 @@ public class SubscriptionService : ISubscriptionService
 
         if (subscriptionEntity.HasValue)
         {
-            await UpdateSubscriptionInStorage(
-                subscriptionEntity.Value.UpdateFolder(itemId, itemDetails.Folder.ChildCount));
+            await UpdateSubscriptionInStorage(subscriptionEntity.Value.UpdateFolder(
+                itemId: itemId, itemName: itemDetails.Name, itemChildCount: itemDetails.Folder.ChildCount));
             return;
         }
 
@@ -56,6 +56,7 @@ public class SubscriptionService : ISubscriptionService
             id: subscriptionResponse.Id,
             itemId: itemId,
             itemChildCount: itemDetails.Folder.ChildCount,
+            itemName: itemDetails.Name,
             applicationId: subscriptionResponse.ApplicationId,
             creatorId: subscriptionResponse.CreatorId,
             changeType: subscriptionResponse.ChangeType,
