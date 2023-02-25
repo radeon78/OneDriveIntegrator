@@ -12,7 +12,7 @@ public class ApiController : Controller
     [HttpPost("webhook-receiver")]
     public async Task<IActionResult> Post(
         [FromQuery] string? validationToken,
-        [FromBody, ModelBinder(BinderType = typeof(NotificationBinder))] NotificationRequest? request,
+        [FromBody, ModelBinder(BinderType = typeof(NotificationRequestBinder))] NotificationRequest? request,
         [FromServices] INotificationService notificationService)
     {
         if (!string.IsNullOrEmpty(validationToken))

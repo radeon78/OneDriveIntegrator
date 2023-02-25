@@ -4,7 +4,7 @@ using OneDriveIntegrator.Services.Notification.Models;
 
 namespace OneDriveIntegrator.Binders;
 
-public class NotificationBinder : IModelBinder
+public class NotificationRequestBinder : IModelBinder
 {
     public async Task BindModelAsync(ModelBindingContext bindingContext)
     {
