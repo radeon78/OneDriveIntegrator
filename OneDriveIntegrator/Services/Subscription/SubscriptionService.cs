@@ -134,7 +134,7 @@ public class SubscriptionService : ISubscriptionService
         {
             var query = _subscriptionTableClient.QueryAsync<SubscriptionEntity>(
                 filter: x => x.Id == id,
-                maxPerPage: 5);
+                maxPerPage: 20);
 
             await foreach (var page in query.AsPages())
                 subscriptions.AddRange(page.Values);
