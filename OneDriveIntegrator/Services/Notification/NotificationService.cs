@@ -77,6 +77,11 @@ public class NotificationService : INotificationService
 
     private static string CreateContent(SubscriptionEntity subscription, Item item)
         => subscription.ItemChildCount > item.Folder!.ChildCount
-            ? $"You deleted {subscription.ItemChildCount - item.Folder!.ChildCount} elements from '{item.Name}' folder."
-            : $"You added {item.Folder!.ChildCount - subscription.ItemChildCount} elements to '{item.Name}' folder.";
+            ? $"You deleted {subscription.ItemChildCount - item.Folder!.ChildCount} {GetElementText(subscription.ItemChildCount - item.Folder!.ChildCount)} from '{item.Name}' folder."
+            : $"You added {item.Folder!.ChildCount - subscription.ItemChildCount} {GetElementText(item.Folder!.ChildCount - subscription.ItemChildCount)} to '{item.Name}' folder.";
+
+    private static string GetElementText(int number)
+        => number > 1
+            ? "elements"
+            : "element";
 }
