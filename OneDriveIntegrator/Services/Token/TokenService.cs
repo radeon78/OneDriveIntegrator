@@ -59,9 +59,11 @@ public class TokenService : ITokenService
         }
     }
 
-    public async Task<TokenEntity> GetTokenAndRefreshIfNeed()
+    public Task<TokenEntity> GetTokenAndRefreshIfNeed()
+        => GetTokenAndRefreshIfNeed(_httpContextAccessor.GetSignedInUser());
+    
+    public async Task<TokenEntity> GetTokenAndRefreshIfNeed(string user)
     {
-        var user = _httpContextAccessor.GetSignedInUser();
         var tokenEntity = await GetTokenFromStorage(user);
         if (!tokenEntity.HasValue)
             throw new ArgumentNullException(nameof(tokenEntity));

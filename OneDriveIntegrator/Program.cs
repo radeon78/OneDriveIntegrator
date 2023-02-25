@@ -11,6 +11,8 @@ builder.Services
     .AddAuthenticationService(configuration, environment)
     .AddTokensStorage(configuration)
     .AddSubscription(configuration)
+    .AddEmail(configuration)
+    .AddINotification()
     .AddControllersWithViews();
 
 var app = builder.Build();

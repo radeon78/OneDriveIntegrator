@@ -1,3 +1,4 @@
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using OneDriveIntegrator.Common;
 using OneDriveIntegrator.Services.Graph.Models;
@@ -11,20 +12,33 @@ public class GraphClient : IGraphClient
     public GraphClient(IHttpClientFactory httpClientFactory)
         => _httpClientFactory = httpClientFactory;
 
-    public async Task<Items> GetRootChildren()
-        => await Get<Items>("/v1.0/me/drive/root/children");
+    public Task<Items> GetRootChildren()
+        => Get<Items>("/v1.0/me/drive/root/children");
 
-    public async Task<Items> GetItemChildren(string id)
-        => await Get<Items>($"/v1.0/me/drive/items/{id}/children");
+    public Task<Items> GetItemChildren(string id)
+        => Get<Items>($"/v1.0/me/drive/items/{id}/children");
 
-    public async Task<Details> GetItemDetails(string id)
-        => await Get<Details>($"/v1.0/me/drive/items/{id}");
+    public Task<Details> GetItemDetails(string id)
+        => Get<Details>($"/v1.0/me/drive/items/{id}");
 
-    private async Task<T> Get<T>(string url)
+    public Task<Details> GetItemDetailsOffline(string id, string accessToken)
+        => Get<Details>($"/v1.0/me/drive/items/{id}", accessToken);
+
+    private Task<T> Get<T>(string url, string accessToken)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Add(HeaderNames.Authorization, new[] { $"Bearer {accessToken}" });
+        return Send<T>(request);
+    }
+
+    private Task<T> Get<T>(string url)
+        => Send<T>(new HttpRequestMessage(HttpMethod.Get, url));
+
+    private async Task<T> Send<T>(HttpRequestMessage request)
     {
         var httpResponse = await _httpClientFactory
             .CreateClient(Constants.HttpGraphClientName)
-            .GetAsync(url);
+            .SendAsync(request);
 
         var body = await httpResponse.Content.ReadAsStringAsync();
 

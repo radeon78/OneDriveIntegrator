@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OneDriveIntegrator.Binders;
-using OneDriveIntegrator.Services.Subscription;
-using OneDriveIntegrator.Services.Subscription.Models;
+using OneDriveIntegrator.Services.Notification;
+using OneDriveIntegrator.Services.Notification.Models;
 
 namespace OneDriveIntegrator.Controllers;
 
@@ -12,16 +12,16 @@ public class ApiController : Controller
     [HttpPost("webhook-receiver")]
     public async Task<IActionResult> Post(
         [FromQuery] string? validationToken,
-        [FromBody, ModelBinder(BinderType = typeof(NotificationBinder))] Notification? request,
-        [FromServices] ISubscriptionService subscriptionService)
+        [FromBody, ModelBinder(BinderType = typeof(NotificationBinder))] NotificationRequest? request,
+        [FromServices] INotificationService notificationService)
     {
         if (!string.IsNullOrEmpty(validationToken))
             return Ok(validationToken);
 
-        if (request == null)
-            return BadRequest($"{nameof(validationToken)} and {request} can not be empty");
-
-        await subscriptionService.AddNotification(request);
+        if (!notificationService.Valid(request))
+            return BadRequest();
+        
+        await notificationService.NotifyUserIfContentInSubscribedFolderChanged(request!);
         return Ok();
     }
 }

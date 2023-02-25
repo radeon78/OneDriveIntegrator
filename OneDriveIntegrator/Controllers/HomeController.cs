@@ -39,7 +39,7 @@ public class HomeController : Controller
         await subscriptionService.Subscribe(id);
         return RedirectToAction("Details", new { id });
     }
-    
+
     public async Task<IActionResult> Unsubscribe(
         string id,
         [FromServices] ISubscriptionService subscriptionService)

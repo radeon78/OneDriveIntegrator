@@ -7,6 +7,7 @@ Application features:
 
 ## Configuration 
 1. Register an application with the Microsoft identity platform https://learn.microsoft.com/en-us/graph/auth-register-app-v2
-2. Configure Azure Storage Account
-3. Configure Email Communication Service https://learn.microsoft.com/en-us/azure/communication-services/quickstarts/email/create-email-communication-resource
-4. Add configuration to appsettings.json
+2. Configure App Service
+3. Configure Azure Storage Account
+4. Configure Twilio SendGrid
+5. Add configuration to appsettings.json

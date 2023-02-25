@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json;
-using OneDriveIntegrator.Services.Subscription.Models;
+using OneDriveIntegrator.Services.Notification.Models;
 
 namespace OneDriveIntegrator.Binders;
 
@@ -13,7 +13,7 @@ public class NotificationBinder : IModelBinder
         using (var reader = new StreamReader(stream))
             body = await reader.ReadToEndAsync();
 
-        var notification = JsonConvert.DeserializeObject<Notification>(body);
+        var notification = JsonConvert.DeserializeObject<NotificationRequest>(body);
         bindingContext.Result = ModelBindingResult.Success(notification);
     }
 }

@@ -9,6 +9,8 @@ public class SubscriptionEntity : ITableEntity
 
     public string ItemId { get; set; } = default!;
 
+    public int ItemChildCount { get; set; }
+
     public string ApplicationId { get; set; } = default!;
 
     public string CreatorId { get; set; } = default!;
@@ -32,6 +34,7 @@ public class SubscriptionEntity : ITableEntity
     public static SubscriptionEntity Create(
         string id,
         string itemId,
+        int itemChildCount,
         string applicationId,
         string creatorId,
         string changeType,
@@ -43,6 +46,7 @@ public class SubscriptionEntity : ITableEntity
         {
             Id = id,
             ItemId = itemId,
+            ItemChildCount = itemChildCount,
             ApplicationId = applicationId,
             CreatorId = creatorId,
             ChangeType = changeType,
@@ -53,9 +57,16 @@ public class SubscriptionEntity : ITableEntity
             PartitionKey = user
         };
 
-    public SubscriptionEntity UpdateFolderToScan(string itemId)
+    public SubscriptionEntity UpdateFolder(string itemId, int itemChildCount)
     {
         ItemId = itemId;
+        ItemChildCount = itemChildCount;
+        return this;
+    }
+    
+    public SubscriptionEntity UpdateFolder(int itemChildCount)
+    {
+        ItemChildCount = itemChildCount;
         return this;
     }
 }

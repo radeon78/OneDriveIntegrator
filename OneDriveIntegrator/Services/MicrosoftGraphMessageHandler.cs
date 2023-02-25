@@ -14,8 +14,12 @@ public class MicrosoftGraphMessageHandler : DelegatingHandler
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
+        if (request.Headers.Contains(HeaderNames.Authorization))
+            return await base.SendAsync(request, cancellationToken);
+        
         var accessToken = await GetAccessToken();
         request.Headers.Add(HeaderNames.Authorization, new[] { $"Bearer {accessToken}" });
+
         return await base.SendAsync(request, cancellationToken);
     }
 

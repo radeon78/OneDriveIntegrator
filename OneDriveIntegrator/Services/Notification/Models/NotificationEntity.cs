@@ -1,7 +1,7 @@
 using Azure;
 using Azure.Data.Tables;
 
-namespace OneDriveIntegrator.Services.Subscription.Models;
+namespace OneDriveIntegrator.Services.Notification.Models;
 
 public class NotificationEntity : ITableEntity
 {

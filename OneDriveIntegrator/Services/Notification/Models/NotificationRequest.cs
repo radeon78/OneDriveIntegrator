@@ -1,6 +1,6 @@
-namespace OneDriveIntegrator.Services.Subscription.Models;
+namespace OneDriveIntegrator.Services.Notification.Models;
 
-public class Notification
+public class NotificationRequest
 {
     public List<Value> Value { get; init; } = new();
 }

@@ -7,8 +7,10 @@ public interface ISubscriptionService
     Task Subscribe(string itemId);
 
     Task Unsubscribe(string itemId);
-    
+
+    Task Update(SubscriptionEntity subscriptionEntity);
+
     Task<SubscriptionEntity?> GetSubscription(string itemId);
 
-    Task AddNotification(Notification notification);
+    Task<IEnumerable<SubscriptionEntity>> GetSubscriptions(IEnumerable<string> itemIds);
 }
