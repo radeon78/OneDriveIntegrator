@@ -12,4 +12,7 @@ public class TokenResponse
 
     [JsonProperty("id_token")] 
     public string IdToken { get; init; } = default!;
+
+    [JsonProperty("expires_in")] 
+    public long ExpiresIn { get; set; }
 }

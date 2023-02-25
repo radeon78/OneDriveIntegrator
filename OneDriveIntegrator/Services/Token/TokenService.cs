@@ -20,7 +20,6 @@ public class TokenService : ITokenService
     private static readonly JwtSecurityTokenHandler Handler = new();
 
     private const string TokenTableName = "Tokens";
-    private const string ExpireClaimName = "exp";
     private const string GrantType = "refresh_token";
 
     public TokenService(
@@ -39,7 +38,8 @@ public class TokenService : ITokenService
     {
         await _tokenTableClient.CreateIfNotExistsAsync();
 
-        var (user, expireIn) = GetUserAndExpireClaims(token.IdToken);
+        var user = GetUserClaim(token.IdToken);
+        var expireIn = ToUnixTimeSeconds(token.ExpiresIn);
         var tokenEntity = await GetTokenFromStorage(user);
 
         if (tokenEntity.HasValue)
@@ -61,7 +61,7 @@ public class TokenService : ITokenService
 
     public Task<TokenEntity> GetTokenAndRefreshIfNeed()
         => GetTokenAndRefreshIfNeed(_httpContextAccessor.GetSignedInUser());
-    
+
     public async Task<TokenEntity> GetTokenAndRefreshIfNeed(string user)
     {
         var tokenEntity = await GetTokenFromStorage(user);
@@ -73,7 +73,7 @@ public class TokenService : ITokenService
 
         var tokenResponse = await RefreshToken(tokenEntity.Value);
 
-        var (_, expireIn) = GetUserAndExpireClaims(tokenResponse.IdToken);
+        var expireIn = ToUnixTimeSeconds(tokenResponse.ExpiresIn);
 
         await UpdateTokenInStorage(tokenEntity.Value.Update(
             accessToken: tokenResponse.AccessToken,
@@ -122,17 +122,18 @@ public class TokenService : ITokenService
     private static bool TokenValid(TokenEntity token)
         => token.ExpireIn > DateTimeOffset.UtcNow.AddMinutes(2).ToUnixTimeSeconds();
 
-    private static (string, long) GetUserAndExpireClaims(string idToken)
+    private static string GetUserClaim(string idToken)
     {
         var claims = GetClaims(idToken);
-        var user = claims.First(c => c.Type == Constants.UserClaimName).Value;
-        var expireIn = long.Parse(claims.First(c => c.Type == ExpireClaimName).Value);
-        return (user, expireIn);
+        return claims.First(c => c.Type == Constants.UserClaimName).Value;
     }
 
-    private static List<Claim> GetClaims(string idToken)
+    private static IEnumerable<Claim> GetClaims(string idToken)
     {
         var jwtSecurityToken = Handler.ReadJwtToken(idToken);
         return jwtSecurityToken.Claims.ToList();
     }
+
+    private static long ToUnixTimeSeconds(long expiresIn)
+        => DateTimeOffset.UtcNow.AddSeconds(expiresIn - 120).ToUnixTimeSeconds();
 }

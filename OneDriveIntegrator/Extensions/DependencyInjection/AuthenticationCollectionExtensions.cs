@@ -63,7 +63,8 @@ public static class AuthenticationCollectionExtensions
                     await tokenService.AddOrUpdateToken(new TokenInput(
                         accessToken: ctx.TokenEndpointResponse.AccessToken,
                         refreshToken: ctx.TokenEndpointResponse.RefreshToken,
-                        idToken: ctx.TokenEndpointResponse.IdToken));
+                        idToken: ctx.TokenEndpointResponse.IdToken,
+                        expiresIn: long.Parse(ctx.TokenEndpointResponse.ExpiresIn)));
                 };
             });
 
